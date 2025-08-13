@@ -257,6 +257,12 @@ This project is licensed under the **Apache License 2.0** - see the [LICENSE](LI
 
 ---
 
+## Roadmap
+
+Awaiting feedback to update!
+
+---
+
 🎤 **Ready to create amazing speech synthesis?** Choose your model and start generating! 
 
 Made with ❤️ combining the best of Kitten TTS, Kokoro TTS, and Piper TTS
