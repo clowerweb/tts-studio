@@ -75,6 +75,9 @@ const handleModelChange = (model) => {
   } else if (model === 'piper') {
     selectedVoice.value = "0"; // Convert to string
     selectedSampleRate.value = null; // Will be set by model config
+  } else if (model === 'kokoro') {
+    selectedVoice.value = "af_heart";
+    selectedSampleRate.value = 24000;
   }
   
   // Restart worker with new model
@@ -336,8 +339,8 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- WebGPU Toggle (Kitten only) -->
-            <WebGPUToggle v-if="selectedModel === 'kitten'" v-model="useWebGPU" @update:modelValue="handleWebGPUToggle" />
+            <!-- WebGPU Toggle (Kitten & Kokoro) -->
+            <WebGPUToggle v-if="selectedModel === 'kitten' || selectedModel === 'kokoro'" v-model="useWebGPU" @update:modelValue="handleWebGPUToggle" />
           </div>
 
           <div v-else-if="error" class="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">

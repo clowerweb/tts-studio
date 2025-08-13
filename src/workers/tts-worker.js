@@ -1,5 +1,6 @@
 import { KittenTTS, TextSplitterStream as KittenTextSplitterStream } from "../lib/kitten-tts.js";
 import { PiperTTS, TextSplitterStream as PiperTextSplitterStream } from "../lib/piper-tts.js";
+import { KokoroTTS, TextSplitterStream as KokoroTextSplitterStream } from "../lib/kokoro-tts.js";
 import { detectWebGPU } from "../utils/utils.js";
 
 let tts = null;
@@ -39,6 +40,21 @@ async function initializeModel(modelType, useWebGPU = false) {
       // Get speakers for Piper model
       const voices = tts.getSpeakers();
       self.postMessage({ status: "ready", voices, device });
+    } else if (modelType === 'kokoro') {
+      // Device detection for Kokoro model (supports WebGPU)
+      const webGPUSupported = await detectWebGPU();
+      device = (useWebGPU && webGPUSupported) ? "webgpu" : "wasm";
+      
+      self.postMessage({ status: "device", device });
+
+      // Load the Kokoro model
+      const model_path = `${import.meta.env.BASE_URL}tts-models/kokoro/model_quantized.onnx`;
+      tts = await KokoroTTS.from_pretrained(model_path, {
+        dtype: device === "wasm" ? "q8" : "fp32",
+        device,
+      });
+      
+      self.postMessage({ status: "ready", voices: tts.voices, device });
     } else {
       throw new Error(`Unknown model type: ${modelType}`);
     }
@@ -65,7 +81,9 @@ self.addEventListener("message", async (e) => {
   }
   
   // Use the correct TextSplitterStream based on current model
-  const TextSplitterStream = currentModel === 'kitten' ? KittenTextSplitterStream : PiperTextSplitterStream;
+  const TextSplitterStream = currentModel === 'kitten' ? KittenTextSplitterStream : 
+                            currentModel === 'kokoro' ? KokoroTextSplitterStream : 
+                            PiperTextSplitterStream;
   const streamer = new TextSplitterStream();
 
   streamer.push(text);
@@ -73,6 +91,8 @@ self.addEventListener("message", async (e) => {
 
   // Use different options based on the model
   const streamOptions = currentModel === 'kitten' 
+    ? { voice, speed }
+    : currentModel === 'kokoro'
     ? { voice, speed }
     : { speakerId: voice, lengthScale: 1.0 / speed }; // Piper uses speakerId and lengthScale
 
@@ -113,10 +133,10 @@ self.addEventListener("message", async (e) => {
       normalizePeak(waveform, 0.9);
       waveform = trimSilence(waveform, 0.002, Math.floor(originalSamplingRate * 0.02)); // 20ms padding
 
-      // Resample if needed (only for Kitten model)
-      const targetSampleRate = currentModel === 'kitten' ? sampleRate : originalSamplingRate;
+      // Resample if needed (only for Kitten and Kokoro models)
+      const targetSampleRate = (currentModel === 'kitten' || currentModel === 'kokoro') ? sampleRate : originalSamplingRate;
       
-      if (currentModel === 'kitten' && targetSampleRate !== originalSamplingRate) {
+      if ((currentModel === 'kitten' || currentModel === 'kokoro') && targetSampleRate !== originalSamplingRate) {
         // Apply anti-aliasing filter for downsampling
         if (targetSampleRate < originalSamplingRate) {
           waveform = antiAliasFilter(waveform, originalSamplingRate, targetSampleRate);

@@ -1,22 +1,23 @@
 # 🎙️ TTS Studio
 
-A unified web-based interface for **multiple text-to-speech models** - featuring both **Kitten TTS** and **Piper TTS** running entirely in your browser! Switch between models seamlessly and choose the perfect voice for your needs.
+A unified web-based interface for **multiple text-to-speech models** - featuring **Kitten TTS**, **Piper TTS**, and **Kokoro TTS** running entirely in your browser! Switch between models seamlessly and choose the perfect voice for your needs.
 
 [Try the web demo!](https://clowerweb.github.io/tts-studio/)
 
 ## ✨ Features
 
-### 🔄 **Dual Model Support**
+### 🔄 **Triple Model Support**
 - **😻 Kitten TTS** - Lightweight 24MB model with 8 voice embeddings
-- **🃏 Piper TTS** - High-quality 75MB model with 904 different voices
+- **🃏 Piper TTS** - High-quality 75MB model with 904 different voices  
+- **🌸 Kokoro TTS** - Premium 82MB model with 21 expressive voices
 
 ### ⚡ **Smart Controls**
 - **Model Switcher** - Seamless switching between TTS engines
 - **Dynamic Interface** - Controls adapt to each model's capabilities
-- **Voice Selection** - From 8 expressive voices (Kitten) to 904 diverse voices (Piper)
+- **Voice Selection** - From 8 expressive voices (Kitten), 21 premium voices (Kokoro), to 904 diverse voices (Piper)
 - **Speed Control** - Adjustable speech rate from 0.5x to 2.0x
-- **Sample Rate Control** - Multiple quality levels (Kitten only)
-- **WebGPU Acceleration** - Optional GPU acceleration (Kitten only)
+- **Sample Rate Control** - Multiple quality levels (Kitten & Kokoro)
+- **WebGPU Acceleration** - Optional GPU acceleration (Kitten & Kokoro)
 
 ### 🌐 **100% Browser-Based**
 - No server required - runs completely locally
@@ -50,28 +51,28 @@ A unified web-based interface for **multiple text-to-speech models** - featuring
 
 - Node.js 16+
 - Modern browser with WebAssembly support
-- ~100MB disk space for both model files
+- ~180MB disk space for all model files
 
 ## 🎛️ Model Comparison
 
-| Feature | 😻 Kitten TTS | 🃏 Piper TTS |
-|---------|----------------|---------------|
-| **Model Size** | ~24MB | ~75MB |
-| **Voices** | 8 expressive embeddings | 904 diverse speakers |
-| **Quality** | High quality, fast | Premium quality |
-| **Speed** | ~2-3x realtime | ~3-5x realtime |
-| **WebGPU** | ✅ Optional acceleration | ❌ WASM only |
-| **Sample Rate** | ✅ 8-48kHz configurable | 22kHz fixed |
-| **Best For** | Quick generation, mobile | High-quality production |
+| Feature | 😻 Kitten TTS | 🌸 Kokoro TTS | 🃏 Piper TTS |
+|---------|----------------|----------------|---------------|
+| **Model Size** | ~24MB | ~82MB | ~75MB |
+| **Voices** | 8 expressive embeddings | 21 premium voices | 904 diverse speakers |
+| **Quality** | High quality, fast | Highest quality, natural | Premium quality |
+| **Speed** | ~2-3x realtime | ~1-2x realtime | ~3-5x realtime |
+| **WebGPU** | ✅ Optional acceleration | ✅ Optional acceleration | ❌ WASM only |
+| **Sample Rate** | ✅ 8-48kHz configurable | 24kHz fixed | 22kHz fixed |
+| **Best For** | Quick generation, mobile | Natural speech, production | Diverse voices, high-quality |
 
 ## 🏗️ How It Works
 
 The TTS Studio provides a unified interface that:
 
-1. **Model Selection** - Choose between Kitten TTS or Piper TTS
+1. **Model Selection** - Choose between Kitten TTS, Kokoro TTS, or Piper TTS
 2. **Dynamic Loading** - Only loads the selected model to save bandwidth
 3. **Adaptive UI** - Shows relevant controls for each model
-4. **Unified Processing** - Both models use the same audio pipeline
+4. **Unified Processing** - All models use the same audio pipeline
 5. **Smart Caching** - Models are cached locally for faster subsequent loads
 
 ## 📦 Technical Details
@@ -82,6 +83,13 @@ The TTS Studio provides a unified interface that:
 - **Voices:** 8 expression-based embeddings
 - **Features:** WebGPU support, configurable sample rates
 - **Source:** [KittenML/kitten-tts-nano-0.1](https://huggingface.co/KittenML/kitten-tts-nano-0.1)
+
+### Kokoro TTS Model
+- **Size:** 82MB quantized ONNX model
+- **Architecture:** StyleTextToSpeech2 neural architecture
+- **Voices:** 21 premium voices (American & British English)
+- **Features:** WebGPU support, natural speech synthesis, adaptive voice embeddings
+- **Source:** [onnx-community/Kokoro-82M-v1.0-ONNX](https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX)
 
 ### Piper TTS Model
 - **Size:** 75MB ONNX model + config
@@ -117,6 +125,7 @@ The TTS Studio provides a unified interface that:
 │   │   └── WebGPUToggle.vue
 │   ├── lib/
 │   │   ├── kitten-tts.js   # Kitten TTS implementation
+│   │   ├── kokoro-tts.js   # Kokoro TTS implementation
 │   │   └── piper-tts.js    # Piper TTS implementation
 │   ├── utils/
 │   │   ├── model-cache.js  # Intelligent model caching
@@ -131,6 +140,10 @@ The TTS Studio provides a unified interface that:
 │       │   ├── model_quantized.onnx
 │       │   ├── tokenizer.json
 │       │   └── voices.json
+│       ├── kokoro/         # Kokoro TTS model files
+│       │   ├── model_quantized.onnx
+│       │   ├── tokenizer.json
+│       │   └── voices/     # 21 voice embedding files
 │       └── piper/          # Piper TTS model files
 │           ├── en_US-libritts_r-medium.onnx
 │           ├── en_US-libritts_r-medium.onnx.json
@@ -147,8 +160,14 @@ The TTS Studio provides a unified interface that:
 - Great for prototyping, mobile devices, or real-time applications
 - Enable WebGPU for even faster generation (if supported)
 
-### For Production Quality:
-- Choose **🃏 Piper TTS** for premium audio quality
+### For Natural Speech:
+- Choose **🌸 Kokoro TTS** for the most natural-sounding voices
+- 21 carefully crafted voices with exceptional expressiveness
+- Perfect for content creation, audiobooks, and premium applications
+- Enable WebGPU for faster generation
+
+### For Voice Variety:
+- Choose **🃏 Piper TTS** for maximum voice diversity
 - 904 voices provide extensive variety for any project
 - Use voice preview to find the perfect speaker
 
@@ -181,6 +200,7 @@ This project is licensed under the **Apache License 2.0** - see the [LICENSE](LI
 ## 🙏 Acknowledgments
 
 - **KittenML Team** for the lightweight and efficient Kitten TTS model
+- **ONNX Community** for the outstanding Kokoro TTS model conversion and optimization
 - **Rhasspy/Piper Team** for the high-quality Piper TTS model and voice collection
 - **LibriTTS Dataset** for the diverse, high-quality voice recordings
 - **Microsoft ONNX Runtime** for excellent WebAssembly inference
@@ -204,11 +224,13 @@ This project is licensed under the **Apache License 2.0** - see the [LICENSE](LI
 ### Performance Issues
 - **Close other tabs** to free memory for models
 - **Use shorter text** for faster generation
-- **Try different models** - Kitten is lighter, Piper higher quality
+- **Try different models** - Kitten is fastest, Kokoro most natural, Piper most diverse
 - **Check device compatibility** - WebGPU requires modern GPU
 
 ### Model-Specific Issues
 - **Kitten TTS WebGPU not working?** This is experimental - WASM fallback will activate
+- **Kokoro TTS slow generation?** Enable WebGPU toggle for significant speedup
+- **Kokoro voices not loading?** Wait for all 21 voice embeddings to download
 - **Piper voice preview silent?** Wait for model to fully load before previewing
 - **Poor audio quality?** Try different voices or adjust speed settings
 
@@ -216,4 +238,4 @@ This project is licensed under the **Apache License 2.0** - see the [LICENSE](LI
 
 🎤 **Ready to create amazing speech synthesis?** Choose your model and start generating! 
 
-Made with ❤️ combining the best of Kitten TTS and Piper TTS
+Made with ❤️ combining the best of Kitten TTS, Kokoro TTS, and Piper TTS
