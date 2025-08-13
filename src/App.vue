@@ -92,6 +92,52 @@ const handleWebGPUToggle = (enabled) => {
   }
 };
 
+let previewAudio = null;
+let isPreviewMode = ref(false);
+
+const handleVoicePreview = async ({ voice, text, action }) => {
+  if (action === 'stop') {
+    if (previewAudio) {
+      previewAudio.pause();
+      previewAudio = null;
+    }
+    isPreviewMode.value = false;
+    return;
+  }
+
+  if (action === 'play') {
+    // Stop any existing preview
+    if (previewAudio) {
+      previewAudio.pause();
+      previewAudio = null;
+    }
+
+    // Only preview if we have a worker and the model is ready
+    if (!worker.value || status.value !== 'ready') {
+      console.warn('Model not ready for preview');
+      return;
+    }
+
+    try {
+      // Mark as preview mode
+      isPreviewMode.value = true;
+      
+      // Send preview request to worker
+      worker.value.postMessage({
+        type: 'tts',
+        text,
+        voice: selectedModel.value === 'piper' ? parseInt(voice) : voice,
+        speed: speed.value,
+        sampleRate: selectedSampleRate.value,
+        isPreview: true // Flag to distinguish preview from main generation
+      });
+    } catch (error) {
+      console.error('Error starting voice preview:', error);
+      isPreviewMode.value = false;
+    }
+  }
+};
+
 const restartWorker = (webGPUPreference = false) => {
   if (worker.value) {
     worker.value.terminate();
@@ -209,8 +255,50 @@ const onMessageReceived = ({ data }) => {
       chunks.value = [...chunks.value, data.chunk];
       break;
     case "complete":
-      status.value = "ready";
-      result.value = data.audio;
+      if (isPreviewMode.value) {
+        // Handle preview audio - play immediately and don't store as result
+        isPreviewMode.value = false;
+        if (data.audio) {
+          try {
+            // Create URL from blob for audio element
+            const audioUrl = URL.createObjectURL(data.audio);
+            previewAudio = new Audio(audioUrl);
+            previewAudio.volume = 0.8; // Set reasonable volume
+            previewAudio.onended = () => {
+              // Reset preview state when audio finishes
+              URL.revokeObjectURL(audioUrl); // Clean up URL
+              previewAudio = null;
+              // Reset preview state in VoiceSelector
+              document.dispatchEvent(new CustomEvent('voicePreviewEnded'));
+            };
+            previewAudio.onerror = (e) => {
+              console.error('Preview audio error:', e);
+              URL.revokeObjectURL(audioUrl); // Clean up URL
+              previewAudio = null;
+              document.dispatchEvent(new CustomEvent('voicePreviewEnded'));
+            };
+
+            previewAudio.play().then(() => {}).catch(e => {
+              console.warn('Preview autoplay failed:', e);
+              URL.revokeObjectURL(audioUrl); // Clean up URL
+              previewAudio = null;
+              document.dispatchEvent(new CustomEvent('voicePreviewEnded'));
+            });
+          } catch (e) {
+            console.error('Error creating preview audio:', e);
+            if (audioUrl) URL.revokeObjectURL(audioUrl); // Clean up URL
+            previewAudio = null;
+            document.dispatchEvent(new CustomEvent('voicePreviewEnded'));
+          }
+        } else {
+          console.warn('No audio data received for preview');
+          document.dispatchEvent(new CustomEvent('voicePreviewEnded'));
+        }
+      } else {
+        // Handle main generation
+        status.value = "ready";
+        result.value = data.audio;
+      }
       break;
   }
 };
@@ -276,7 +364,7 @@ onUnmounted(() => {
     <!-- Main Content -->
     <main class="container mx-auto px-4 pt-8 pb-4 max-w-4xl">
       <!-- Main Card -->
-      <div class="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 overflow-hidden">
+      <div class="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
         <div class="p-6 pb-0 space-y-6">
           <!-- Text Input Section -->
           <div class="space-y-4">
@@ -319,7 +407,9 @@ onUnmounted(() => {
                 <VoiceSelector
                   :voices="voices"
                   :selected-voice="selectedVoice"
+                  :model-type="selectedModel"
                   @voice-change="setSelectedVoice"
+                  @voice-preview="handleVoicePreview"
                 />
               </div>
 

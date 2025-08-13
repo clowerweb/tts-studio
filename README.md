@@ -15,6 +15,7 @@ A unified web-based interface for **multiple text-to-speech models** - featuring
 - **Model Switcher** - Seamless switching between TTS engines
 - **Dynamic Interface** - Controls adapt to each model's capabilities
 - **Voice Selection** - From 8 expressive voices (Kitten), 21 premium voices (Kokoro), to 904 diverse voices (Piper)
+- **Voice Preview** - Click to instantly hear any voice before selecting it! 🎧
 - **Speed Control** - Adjustable speech rate from 0.5x to 2.0x
 - **Sample Rate Control** - Multiple quality levels (Kitten & Kokoro)
 - **WebGPU Acceleration** - Optional GPU acceleration (Kitten & Kokoro)
@@ -24,6 +25,7 @@ A unified web-based interface for **multiple text-to-speech models** - featuring
 - Real-time generation using WebAssembly
 - Smart model loading - only loads selected model
 - Intelligent caching for optimal performance
+- One-click voice previews with personalized greetings
 
 ## 🚀 Quick Start
 
@@ -59,6 +61,7 @@ A unified web-based interface for **multiple text-to-speech models** - featuring
 |---------|----------------|----------------|---------------|
 | **Model Size** | ~24MB | ~82MB | ~75MB |
 | **Voices** | 8 expressive embeddings | 21 premium voices | 904 diverse speakers |
+| **Voice Preview** | ✅ Instant previews | ✅ Instant previews | ✅ Instant previews |
 | **Quality** | High quality, fast | Highest quality, natural | Premium quality |
 | **Speed** | ~2-3x realtime | ~1-2x realtime | ~3-5x realtime |
 | **WebGPU** | ✅ Optional acceleration | ✅ Optional acceleration | ❌ WASM only |
@@ -171,10 +174,23 @@ The TTS Studio provides a unified interface that:
 - 904 voices provide extensive variety for any project
 - Use voice preview to find the perfect speaker
 
+## 🎧 Voice Preview Feature
+
+**Test voices instantly!** Every voice across all models includes an instant preview:
+
+- **🎯 One-Click Preview** - Click the play button next to any voice to hear it immediately
+- **🎭 Personalized Greetings** - Each voice introduces itself with a unique message
+- **⚡ Zero Setup** - No configuration needed, works with all models
+- **🔄 Easy Comparison** - Switch between voices to find your favorite
+- **🛑 Smart Controls** - Click again to stop, automatic cleanup when finished
+
+Perfect for finding the ideal voice for your project without any guesswork!
+
 ### Performance Optimization:
 - Only one model loads at a time to save memory
 - Models are cached locally after first download
 - Use shorter text chunks for faster streaming
+- Voice previews are lightweight and don't interfere with main generation
 
 ## 🤝 Contributing
 
