@@ -29,7 +29,7 @@ A unified web-based interface for **multiple text-to-speech models** - featuring
 
 ## 🚀 Quick Start
 
-### **GHCO/Docker**  
+### **GHCR/Docker**  
 `docker pull ghcr.io/clowerweb/tts-studio:latest`
 
 ### **Git/NPM**
