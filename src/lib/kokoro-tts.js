@@ -2,10 +2,11 @@
 
 import {chunkText, cleanTextForTTS} from '../utils/text-cleaner.js';
 
-// Text splitting stream to break text into chunks
+// Text splitting stream to break text into chunks (enhanced for streaming)
 export class TextSplitterStream {
   constructor() {
     this.chunks = [];
+    this.pendingText = '';
     this.closed = false;
   }
 
@@ -15,19 +16,58 @@ export class TextSplitterStream {
     return chunkText(cleanedText);
   }
 
-  push(text) {
-    // Simple sentence splitting for now
-    const sentences = this.chunkText(text) || [text];
-    this.chunks.push(...sentences);
+  push(...texts) {
+    // Support both single text and multiple texts like the official implementation
+    for (const text of texts) {
+      this.pendingText += text;
+      
+      // Check if we have complete sentences to process
+      const sentences = this.pendingText.split(/(?<=[.!?])\s+/);
+      
+      // Keep the last fragment in case it's incomplete
+      if (sentences.length > 1) {
+        this.pendingText = sentences.pop();
+        
+        // Process complete sentences
+        for (const sentence of sentences) {
+          if (sentence.trim()) {
+            const chunks = this.chunkText(sentence) || [sentence];
+            this.chunks.push(...chunks);
+          }
+        }
+      }
+    }
+  }
+
+  flush() {
+    // Process any remaining text without waiting for sentence completion
+    if (this.pendingText.trim()) {
+      const chunks = this.chunkText(this.pendingText) || [this.pendingText];
+      this.chunks.push(...chunks);
+      this.pendingText = '';
+    }
   }
 
   close() {
+    // Flush any remaining text and close the stream
+    this.flush();
     this.closed = true;
   }
 
   async *[Symbol.asyncIterator]() {
-    for (const chunk of this.chunks) {
-      yield chunk;
+    let processedIndex = 0;
+    
+    while (!this.closed || processedIndex < this.chunks.length) {
+      // Yield any new chunks that have been added
+      while (processedIndex < this.chunks.length) {
+        yield this.chunks[processedIndex];
+        processedIndex++;
+      }
+      
+      // If not closed, wait a bit for more chunks
+      if (!this.closed) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
     }
   }
 }
@@ -287,6 +327,10 @@ export class KokoroTTS {
           if (this.session && this.voiceEmbeddings[voice]) {
             try {
               const language = voice.startsWith('a') ? 'a' : 'b'; // Determine language from voice ID
+              
+              // Get phonemes for the text chunk
+              const phonemes = await this.phonemize(text, language);
+              
               const tokenIds = await this.tokenizeText(text, language);
               const inputIds = new BigInt64Array(tokenIds.map(id => BigInt(id)));
               
@@ -361,8 +405,10 @@ export class KokoroTTS {
                 }
               }
 
+              // Yield with phonemes information like the official implementation
               yield {
                 text,
+                phonemes, // Include phonemes in the output
                 audio: new RawAudio(finalAudioData, sampleRate)
               };
             } catch (modelError) {
@@ -375,6 +421,7 @@ export class KokoroTTS {
           // Yield silence in case of error
           yield {
             text,
+            phonemes: text, // Fallback phonemes
             audio: new RawAudio(new Float32Array(24000), 24000)
           };
         }
