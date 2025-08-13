@@ -1,0 +1,30 @@
+{
+  "name": "tts-studio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "format": "prettier --write tts-studio",
+    "build": "vite build",
+    "lint": "eslint tts-studio",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-vue-next": "^0.539.0",
+    "onnxruntime-web": "^1.22.0",
+    "phonemizer": "^1.2.1",
+    "tailwindcss": "^4.1.11",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@tailwindcss/vite": "^4.1.11",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@webgpu/types": "^0.1.64",
+    "eslint": "^9.33.0",
+    "eslint-plugin-vue": "^10.4.0",
+    "prettier": "^3.6.2",
+    "vite": "^7.1.1"
+  }
+}
